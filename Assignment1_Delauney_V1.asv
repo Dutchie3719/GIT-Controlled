@@ -271,7 +271,7 @@ delywet = vert(:,2);
 %find out which elements are below waterline and creates and index
 iswet = dely > waterLine;
 
-%creates new delx and dely of only the values where Y < waterline
+%creates new delx and dely of only the values where Y 
 delxwet2 = delx(iswet);
 delywet2 = dely(iswet);
 
