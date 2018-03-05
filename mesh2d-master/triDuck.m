@@ -1,4 +1,5 @@
 
+
 %% Read Polyline Data
 
 fileID = fopen('duckPolyline.txt','r'); % duckPolyline.txt testPolyline.txt testPolyline_sub.txt

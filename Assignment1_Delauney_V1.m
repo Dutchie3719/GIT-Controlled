@@ -3,8 +3,7 @@
 %4745094
 
 %% Question 1
-% Will the duck float in the illustrated configuration?
-% 
+% Will the duck float in the illustrated configuration? 
 % 
 %  For this assignment, Delauney Triangulation was used to create a shape
 %  approximation.

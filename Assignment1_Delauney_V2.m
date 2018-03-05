@@ -1,4 +1,65 @@
+%Daniel Shor
+%Modeling Assignment 1
+%4745094
+%% Question 1
+% Will the duck float in the illustrated configuration?
+% 
+%  For this assignment, Delauney Triangulation was used to create a shape
+%  approximation.
+% 
 
+%% Question 2
+% Can we change density or emerged height to show that 2d shape will float
+% in upright configuration
+% 
+% 
+%  For this assignment, Delauney Triangulation was used to create a shape
+%  approximation.
+% 
+
+%% Question 3
+% What are the new densities and heights? Otherwise, why does it not float
+% as intended
+% 
+% 
+%  For this assignment, Delauney Triangulation was used to create a shape
+%  approximation.
+% 
+
+%% Question 4 
+% Which Shape moddeling technique was used?$
+% 
+% 
+%  For this assignment, Delauney Triangulation was used to create a shape
+%  approximation.
+% 
+
+%% Question 5
+% Why this shape modelling technique?
+% 
+% 
+%  Triangulation is a more accurate way of approximating shapes than a
+%  cubic or circular shape simplification. After an initial assessment and
+%  discussion with the MATLAB TA on how the Triduck.m file worked, I was
+%  already begining to understand the implementation of Triduck.m and how
+%  shape triangulation could be used. I was however not able to fully
+%  implement the 
+% 
+
+%% Clear Windows & Vars 
+clear
+clc
+
+%% Basic Constants
+
+dwater = 1
+dPLA = 1.25
+dInfill = .50
+
+%% Preallocating Matricies
+xic = [];
+yic = [];
+subDuck = [];
 %% Read Polyline Data
 
 fileID = fopen('duckPolyline.txt','r'); % duckPolyline.txt testPolyline.txt testPolyline_sub.txt
@@ -58,26 +119,41 @@ for i=1:nTri
     v3x = vert(i3,1);
     v3y = vert(i3,2);
     
-    v1 = [v1x v1y];
-    v2 = [v2x v2y];
-    v3 = [v3x v3y];
-    
-    
-    % WRITE YOUR CODE HERE %
-    % CenterPerTriangle(i,:) = ?  
-    % AreaPerTriangle(i) = ?
+    cen1 = [v1x v1y];
+    cen2 = [v2x v2y];
+    cen3 = [v3x v3y];
+
         
 end
+    a1 = cen1(:,1).*(cen2(:,2)-(cen3(:,2)));
+    a2 = cen2(:,1).*(cen3(:,2)-(cen1(:,2)));
+    a3 = cen3(:,1).*(cen1(:,2)-(cen2(:,2)));
 
+    %create an array of the area of all triangles
+    area = (a1+a2+a3)/2;
+    areaduck = 0;
+        
 ShapeCenter = [0 0];
-totalArea = 0;
+areaduck = 0;
 
-% WRITE YOUR CODE HERE %
-% ShapeCenter = ?
-% totalArea = ?
+%% Solving for the Duck Area
+
+%Using Polyarea to solve for area of simplified duck shape.
+%create an Xmatrix and a Ymatrix in order to run polyarea
+delx = vert(:,1);
+dely = vert(:,2);
+
+areaduck = polyarea(delx,dely);
+
+%% Solving for Mass of Duck
+% Use M = V*d
+
+dduck = dPLA * dInfill; 
+duckmass = areaduck * dduck 
+
 
 hold on;
 plot(ShapeCenter(1,1),ShapeCenter(1,2),'r*');
 disp([' Center: ' sprintf('%6.3f %6.3f',ShapeCenter(1,1), ShapeCenter(1,2))]);
-disp([' Area: ' sprintf('%6.3f',totalArea)]);
+disp([' Area: ' sprintf('%6.3f',areaduck)]);
   
