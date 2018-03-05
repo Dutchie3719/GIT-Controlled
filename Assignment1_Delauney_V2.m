@@ -130,7 +130,7 @@ end
     a3 = cen3(:,1).*(cen1(:,2)-(cen2(:,2)));
 
     %create an array of the area of all triangles
-    area = (a1+a2+a3)/2;
+    area = (a1+a2+a3)/3;
     areaduck = 0;
         
 ShapeCenter = [0 0];
