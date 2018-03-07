@@ -60,6 +60,8 @@ dInfill = .50
 xic = [];
 yic = [];
 subDuck = [];
+ShapeCenter = [0 0];
+areaduck = 0;
 %% Read Polyline Data
 
 fileID = fopen('duckPolyline.txt','r'); % duckPolyline.txt testPolyline.txt testPolyline_sub.txt
@@ -125,21 +127,15 @@ for i=1:nTri
 
     CenterPerTriangle(i,:) = [((v1x + v2x + v3x) / 3), ((v1y + v2y + v3y)/ 3)];
     hold on
-    plot(CenterPerTriangle(i,1),CenterPerTriangle(i,2),'Y.')
+    plot(CenterPerTriangle(i,1),CenterPerTriangle(i,2),'black.')
    
     AreaPerTriangle(i) = abs(((v1x*(v2y - v3y)) + (v2x*(v3y - v1y)) + (v3x*(v1y - v2y))) / 2);    
 end
 
     %create an array of the area of all triangles
 
-ShapeCenter = [0 0];
-areaduck = 0;
 
 
-
-cx = sum(AreaPerTriangle.*CenterPerTriangle(:,1))/areaduck
-cy = sum(AreaPerTriangle.*CenterPerTriangle(:,2))/areaduck
-ShapeCenter = [cx cy];
 
 %% Solving for the Duck Area
 areaduck = sum(AreaPerTriangle);
@@ -149,11 +145,17 @@ areaduck = sum(AreaPerTriangle);
 
 %Using Polyarea to solve for area of simplified duck shape.
 %create an Xmatrix and a Ymatrix in order to run polyarea
-%delx = vert(:,1);
-%dely = vert(:,2);
+delx = vert(:,1);
+dely = vert(:,2);
 %
 %areaduck = polyarea(delx,dely); 
 %
+
+%% Solve for the Center of the Duck
+cx = sum(AreaPerTriangle.*CenterPerTriangle(:,1))/areaduck;
+cy = sum(AreaPerTriangle.*CenterPerTriangle(:,2))/areaduck;
+ShapeCenter = [cx cy];
+
 %% Solving for Mass of Duck
 % Use M = V*d
 
@@ -165,4 +167,66 @@ hold on;
 plot(ShapeCenter(1,1),ShapeCenter(1,2),'r*');
 disp([' Center: ' sprintf('%6.3f %6.3f',ShapeCenter(1,1), ShapeCenter(1,2))]);
 disp([' Area: ' sprintf('%6.3f',areaduck)]);
+
+%% Calculating Water Line
+% This section uses the default 1/3 of duck submerged and plots the duck as
+% under water
+
+%Duck height scalar
+a = .3;
+
+%Calculating the total height of the duck by min and max of Y matrix values
+topduck = max(vert(:,2));
+bottomduck = min(vert(:,2));
+leftduck = min(vert(:,1))
+rightduck = max(vert(:,1))
+heightDuck = topduck - bottomduck;
+
+%Waterline
+waterLine = topduck-a*heightDuck;
+
+%drawing the water line and plotting the center of mass
+hold on
+    line([40,85],[waterLine,waterLine],'Color','blue','LineStyle','--','linewidth',1)
+hold off
+
+%% Waterbox
+% This visualizes the vater that is in contact with the duck.
+
+
+%Create Box of Water
+waterboxX = [rightduck, leftduck, leftduck, rightduck]
+waterboxY = [waterLine, waterLine, topduck, topduck]
+hold on
+    patch(waterboxX,waterboxY,'b','FaceAlpha',.3)
+hold off
+
+%% Solving for the Duck Area Underwater
+
+%Using Polyarea to solve for area of simplified duck shape.
+%create an Xmatrix and a Ymatrix in order to run polyarea
+delxwet = vert(:,1);
+delywet = vert(:,2);
+
+
+
+%find out which elements are below waterline and creates and index
+iswet = dely > waterLine;
+
+%creates new delx and dely of only the values where Y < waterline
+delxwet2 = delx(iswet);
+delywet2 = dely(iswet);
+
+refmatrix = zeros(size(iswet));
+refmatrix = refmatrix(iswet);
+
+%creates two new matricies that are the left and right points of the duck
+
+lxwet = 0; %left intersection point placeholder var
+rxwet = 0; %right intersection point placeholder var
+
+wetleft = [lxwet, waterLine]; %leftpoint of intersection
+wetright = [rxwet,waterLine]; %right point of intersection
+
+areaduckwet = polyarea(delxwet2,delywet2)
   
