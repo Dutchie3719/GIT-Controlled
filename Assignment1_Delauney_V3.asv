@@ -240,17 +240,10 @@ rxwet = 0; %right intersection point placeholder var
 wetleft = [lxwet, waterLine]; %leftpoint of intersection
 wetright = [rxwet,waterLine]; %right point of intersection
 
-
-%% Super Sketchy IsDuck Wet Area
-%Poly area gives me a weird value thats way to high. 
-%%I'm assuming that the error is consistent and determining the factor of how high poly area is. 
-%%I'm then deviding that out to create a single useful polyarea. 
-%%This should get me the wet area of the duck via super cheaty means.
-
 areaduck2 = polyarea(delx,dely)
 areaduckwet = polyarea(delxwet2,delywet2);
 
-areaduckscalefactor = areaduck2/areaduck;               
+areaduckscalefactor = areaduck2/areaduck;
 areaduckfixedwet = areaduckwet*areaduckscalefactor;
 
 %% Solving for Underwater COM
