@@ -59,6 +59,7 @@ yic = [];
 subDuck = [];
 ShapeCenter = [0 0];
 areaduck = 0;
+n = 0;
 %% Read Polyline Data
 
 fileID = fopen('duckPolyline.txt','r');                                     %duckPolyline.txt testPolyline.txt testPolyline_sub.txt
@@ -178,11 +179,20 @@ for i=1:nTri
     CenterPerTriangle(i,:) = [((v1x + v2x + v3x) / 3), ((v1y + v2y + v3y)/ 3)];
     hold on
     plot(CenterPerTriangle(i,1),CenterPerTriangle(i,2),'black.')
+    
+    if (iswetcheck(i) == 1)         % this if statement checks to see if any of the waterline values are above any of the vertexes of the triangle
+        CenterPerTrianglewet(n,:) = [((v1x + v2x + v3x) / 3), ((v1y + v2y + v3y)/ 3)];
+        plot(CenterPerTrianglewet(n,1),CenterPerTrianglewet(n,2),'g.')
+        n = n+1;
+    end
+    
+    
+    
    
     AreaPerTriangle(i) = abs(((v1x*(v2y - v3y)) + (v2x*(v3y - v1y)) + (v3x*(v1y - v2y))) / 2);
     AreaPerTrianglewet(i) = abs(iswetcheck(i)*((v1x*(v2y - v3y)) + (v2x*(v3y - v1y)) + (v3x*(v1y - v2y))) / 2);
 end
-
+    hold off
 
 %% Solving for the Duck Area
 areaduck = sum(AreaPerTriangle);
@@ -214,6 +224,7 @@ duckvecend = [cx, vecy];
 %Show COM in Red
 hold on;
 plot(ShapeCenter(1,1),ShapeCenter(1,2),'r*');
+hold off;
 
 %% Print Final Values of Total Duck
 disp([' Center: ' sprintf('%6.3f %6.3f',ShapeCenter(1,1), ShapeCenter(1,2))]);
