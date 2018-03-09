@@ -105,20 +105,66 @@ edge(m,2) = 1;
     set(figure(1),'units','normalized', ...
         'position',[.05,.50,.30,.35]) ;
 
+%% Calculating Water Line
+% This section uses the default 1/3 of duck submerged and plots the duck as
+% under water
+a = .3;                                                                     %Duck height scalar
+
+%Calculating the total height of the duck by min and max of Y matrix values
+topduck = max(vert(:,2));
+bottomduck = min(vert(:,2));
+leftduck = min(vert(:,1));
+rightduck = max(vert(:,1));
+heightDuck = topduck - bottomduck;
+
+%Waterline
+waterLine = topduck-a*heightDuck;
+
+%% Plot Duck Waterline
+%drawing the water line and plotting the center of mass
+hold on
+    line([40,85],[waterLine,waterLine],'Color','blue','LineStyle','--','linewidth',1)
+hold off
+
+%% Waterbox Calcualtion
+%This visualizes the vater that is in contact with the duck.
+%Create Box of Water
+waterboxX = [rightduck, leftduck, leftduck, rightduck];
+waterboxY = [waterLine, waterLine, topduck, topduck];
+
+%% Plot Waterbox
+hold on
+    patch(waterboxX,waterboxY,'b','FaceAlpha',.3)
+hold off
+
+%% Solving for the Duck Area Underwater
+
+delx = vert(:,1);                                                           %matrix of X coordinates
+dely = vert(:,2);  
+
+%find out which elements are below waterline and creates and index
+iswet = dely < waterLine;
+
+                                                         %matrix of Y cooridnates
+%creates new delx and dely of only the values where Y < waterline
+delxwet = delx(iswet);         %xmatrix of only wet values
+delywet = dely(iswet);         %ymatrix of only wet values
+
 %% Caculate the center and the area of the shape
 nTri = size(tria, 1);                                                       % The number of triangles
 nVert = size(vert,1);                                                       % The number of vertices
 
 AreaPerTriangle = zeros(nTri,1);
 CenterPerTriangle = zeros(nTri,2);
+iswetcheck = zeros(nTri,1);
 
 for i=1:nTri
     i1 = tria(i,1);                                                         % The index of the first vertex in the i-th triangle
     i2 = tria(i,2);
     i3 = tria(i,3);
     
-    v1x = vert(i1,1);   % x-cooridinate of the first vertex
-    v1y = vert(i1,2);   % y-cooridinate of the first vertex
+    v1x = vert(i1,1);                                                       % x-cooridinate of the first vertex
+    v1y = vert(i1,2);                                                       % y-cooridinate of the first vertex
     v2x = vert(i2,1);
     v2y = vert(i2,2);
     v3x = vert(i3,1);
@@ -128,6 +174,12 @@ for i=1:nTri
     cen2 = [v2x v2y];
     cen3 = [v3x v3y];
 
+    if (v1y > waterLine) && (v2y > waterLine) && (v3y > waterLine)
+        iswetcheck(i) = 0;
+    else
+        iswetcheck(i) = 1;
+    end
+    
     CenterPerTriangle(i,:) = [((v1x + v2x + v3x) / 3), ((v1y + v2y + v3y)/ 3)];
     hold on
     plot(CenterPerTriangle(i,1),CenterPerTriangle(i,2),'black.')
@@ -138,8 +190,7 @@ end
 
 %% Solving for the Duck Area
 areaduck = sum(AreaPerTriangle);
-delx = vert(:,1);                                                           %matrix of X coordinates
-dely = vert(:,2);                                                           %matrix of Y cooridnates
+
 
 %% Solve for the Center of the Duck
 cx = sum(AreaPerTriangle.*CenterPerTriangle(:,1))/areaduck;
@@ -169,52 +220,6 @@ hold on;
 plot(ShapeCenter(1,1),ShapeCenter(1,2),'r*');
 
 
-%% Calculating Water Line
-% This section uses the default 1/3 of duck submerged and plots the duck as
-% under water
-a = .3;                                                                     %Duck height scalar
-
-%Calculating the total height of the duck by min and max of Y matrix values
-topduck = max(vert(:,2));
-bottomduck = min(vert(:,2));
-leftduck = min(vert(:,1));
-rightduck = max(vert(:,1));
-heightDuck = topduck - bottomduck;
-
-%Waterline
-waterLine = topduck-a*heightDuck;
-
-
-%% Plot Duck Waterline
-%drawing the water line and plotting the center of mass
-hold on
-    line([40,85],[waterLine,waterLine],'Color','blue','LineStyle','--','linewidth',1)
-hold off
-
-%% Waterbox Calcualtion
-%This visualizes the vater that is in contact with the duck.
-%Create Box of Water
-waterboxX = [rightduck, leftduck, leftduck, rightduck];
-waterboxY = [waterLine, waterLine, topduck, topduck];
-
-%% Plot Waterbox
-hold on
-    patch(waterboxX,waterboxY,'b','FaceAlpha',.3)
-hold off
-
-%% Solving for the Duck Area Underwater
-
-%Using Polyarea to solve for area of simplified duck shape.
-%create an Xmatrix and a Ymatrix in order to run polyarea
-delxwet = vert(:,1);
-delywet = vert(:,2);
-
-%find out which elements are below waterline and creates and index
-iswet = dely < waterLine;
-
-%creates new delx and dely of only the values where Y < waterline
-delxwet2 = delx(iswet);         %xmatrix of only wet values
-delywet2 = dely(iswet);         %ymatrix of only wet values
 
 %% Super Sketchy IsDuck Wet Area
 %Poly area gives me a weird value thats way to high. 
@@ -222,16 +227,15 @@ delywet2 = dely(iswet);         %ymatrix of only wet values
 %%I'm then deviding that out to create a single useful polyarea. 
 %%This should get me the wet area of the duck via super cheaty means.
 
-areaduck2 = polyarea(delx,dely)
-areaduckwet = polyarea(delxwet2,delywet2);
+areaduck2 = polyarea(delx,dely);
+areaduckwet = polyarea(delxwet,delywet);
 
 areaduckscalefactor = areaduck2/areaduck;               
 areaduckfixedwet = areaduckwet*areaduckscalefactor;
 
 %% Solving for Underwater COM
-iswettria = horzcat(iswet,iswet,iswet)  %created to be the right length for matrix math.
 triawet = tria;
-vertwet = horzcat(delxwet2,delywet2);
+vertwet = horzcat(delxwet,delywet);
 
 nTriwet = size(triawet, 1); % The number of triangles
 nVertwet = size(vertwet,1); % The number of vertices
@@ -239,31 +243,32 @@ nVertwet = size(vertwet,1); % The number of vertices
 
 AreaPerTrianglewet = zeros(nTriwet,1);
 CenterPerTrianglewet = zeros(nTriwet,2);
-for i=1:nTri
-    i1wet = triawet(i,1); % The index of the first vertex in the i-th triangle
-    i2wet = triawet(i,2);
-    i3wet = triawet(i,3);
-    
-    v1xwet = vertwet(i1wet,1);   % x-cooridinate of the first vertex
-    v1ywet = vertwet(i1wet,2);   % y-cooridinate of the first vertex
-    v2xwet = vertwet(i2wet,1);
-    v2ywet = vertwet(i2wet,2);
-    v3xwet = vertwet(i3wet,1);
-    v3ywet = vertwet(i3wet,2);
-    
-    cen1wet = [v1xwet v1ywet];
-    cen2wet = [v2xwet v2ywet];
-    cen3wet = [v3xwet v3ywet];
 
-    CenterPerTrianglewet(i,:) = [((v1xwet + v2xwet + v3xwet) / 3), ((v1ywet + v2ywet + v3ywet)/ 3)];
+for i=1:nTri
+    i1 = tria(i,1);                                                         % The index of the first vertex in the i-th triangle
+    i2 = tria(i,2);
+    i3 = tria(i,3);
+    
+    v1x = vert(i1,1);                                                       % x-cooridinate of the first vertex
+    v1y = vert(i1,2);                                                       % y-cooridinate of the first vertex
+    v2x = vert(i2,1);
+    v2y = vert(i2,2);
+    v3x = vert(i3,1);
+    v3y = vert(i3,2);
+    
+    cen1 = [v1x v1y];
+    cen2 = [v2x v2y];
+    cen3 = [v3x v3y];
+
+    CenterPerTriangle(i,:) = [((v1x + v2x + v3x) / 3), ((v1y + v2y + v3y)/ 3)];
     hold on
-    plot(CenterPerTrianglewet(i,1),CenterPerTrianglewet(i,2),'g.')
+    plot(CenterPerTriangle(i,1),CenterPerTriangle(i,2),'black.')
    
-    AreaPerTrianglewet(i) = abs(((v1xwet*(v2ywet - v3ywet)) + (v2xwet*(v3ywet - v1ywet)) + (v3xwet*(v1ywet - v2ywet))) / 2);    
+    AreaPerTriangle(i) = abs(((v1x*(v2y - v3y)) + (v2x*(v3y - v1y)) + (v3x*(v1y - v2y))) / 2);    
 end
 
-    %create an array of the area of all triangles
+%create an array of the area of all triangles
 cxwet = sum(AreaPerTrianglewet.*CenterPerTrianglewet(:,1))/areaduckwet;
-cywet = sum(AreaPerTriangle.*CenterPerTrianglewet(:,2))/areaduckwet;
+cywet = sum(AreaPerTrianglewet.*CenterPerTrianglewet(:,2))/areaduckwet;
 ShapeCenteriswet = [cxwet cywet];
   
