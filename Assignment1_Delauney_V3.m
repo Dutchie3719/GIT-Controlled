@@ -48,11 +48,10 @@ clear
 clc
 
 %% Basic Constants
-
-dwater = 1;
-dPLA = 1.25
-dInfill = .50   %infill density
-g = 9.8         % gravity
+dwater = 1;                                                                 %density of water
+dPLA = 1.25;                                                                %density of PLA
+dInfill = .50;                                                              %infill density
+g = 9.8;                                                                    %gravity
 
 %% Preallocating Matricies
 xic = [];
@@ -62,7 +61,7 @@ ShapeCenter = [0 0];
 areaduck = 0;
 %% Read Polyline Data
 
-fileID = fopen('duckPolyline.txt','r'); % duckPolyline.txt testPolyline.txt testPolyline_sub.txt
+fileID = fopen('duckPolyline.txt','r');                                     %duckPolyline.txt testPolyline.txt testPolyline_sub.txt
 formatSpec = '%f %f';
 sizeA = [2 Inf];
 A = fscanf(fileID,formatSpec,sizeA);
@@ -107,14 +106,14 @@ edge(m,2) = 1;
         'position',[.05,.50,.30,.35]) ;
 
 %% Caculate the center and the area of the shape
-nTri = size(tria, 1); % The number of triangles
-nVert = size(vert,1); % The number of vertices
+nTri = size(tria, 1);                                                       % The number of triangles
+nVert = size(vert,1);                                                       % The number of vertices
 
 AreaPerTriangle = zeros(nTri,1);
 CenterPerTriangle = zeros(nTri,2);
 
 for i=1:nTri
-    i1 = tria(i,1); % The index of the first vertex in the i-th triangle
+    i1 = tria(i,1);                                                         % The index of the first vertex in the i-th triangle
     i2 = tria(i,2);
     i3 = tria(i,3);
     
@@ -136,21 +135,11 @@ for i=1:nTri
     AreaPerTriangle(i) = abs(((v1x*(v2y - v3y)) + (v2x*(v3y - v1y)) + (v3x*(v1y - v2y))) / 2);    
 end
 
-    %create an array of the area of all triangles
 
 %% Solving for the Duck Area
 areaduck = sum(AreaPerTriangle);
-
-%THIS CODE DOESN'T WORK. I'M NOT SURE WHY. LOOK INTO WHY POLYAREA DOESN'T
-%WORK.
-
-%Using Polyarea to solve for area of simplified duck shape.
-%create an Xmatrix and a Ymatrix in order to run polyarea
-delx = vert(:,1);
-dely = vert(:,2);
-%
-%areaduck = polyarea(delx,dely); 
-%
+delx = vert(:,1);                                                           %matrix of X coordinates
+dely = vert(:,2);                                                           %matrix of Y cooridnates
 
 %% Solve for the Center of the Duck
 cx = sum(AreaPerTriangle.*CenterPerTriangle(:,1))/areaduck;
@@ -162,24 +151,28 @@ ShapeCenter = [cx cy];
 
 dduck = dPLA * dInfill; 
 duckmass = areaduck * dduck; 
-duckforce = duckmass/1000 * g;  %force = M(kg)*g(N)
+duckforce = duckmass/1000 * g;                                              %force = M(kg)*g(N)
 
 duckvecstart = ShapeCenter;
 vecy = cy + duckforce;
 duckvecend = [cx, vecy];
 
-%% Plot Duck 
-hold on;
-plot(ShapeCenter(1,1),ShapeCenter(1,2),'r*');
+%% Print Final Values of Total Duck
 disp([' Center: ' sprintf('%6.3f %6.3f',ShapeCenter(1,1), ShapeCenter(1,2))]);
 disp([' Area: ' sprintf('%6.3f',areaduck)]);
+disp([' Mass: ' sprintf('%6.3f',duckmass)]);
+
+
+%% Plot Duck Center of Mass
+%Show COM in Red
+hold on;
+plot(ShapeCenter(1,1),ShapeCenter(1,2),'r*');
+
 
 %% Calculating Water Line
 % This section uses the default 1/3 of duck submerged and plots the duck as
 % under water
-
-%Duck height scalar
-a = .3;
+a = .3;                                                                     %Duck height scalar
 
 %Calculating the total height of the duck by min and max of Y matrix values
 topduck = max(vert(:,2));
@@ -191,18 +184,20 @@ heightDuck = topduck - bottomduck;
 %Waterline
 waterLine = topduck-a*heightDuck;
 
+
+%% Plot Duck Waterline
 %drawing the water line and plotting the center of mass
 hold on
     line([40,85],[waterLine,waterLine],'Color','blue','LineStyle','--','linewidth',1)
 hold off
 
-%% Waterbox
-% This visualizes the vater that is in contact with the duck.
-
-
+%% Waterbox Calcualtion
+%This visualizes the vater that is in contact with the duck.
 %Create Box of Water
 waterboxX = [rightduck, leftduck, leftduck, rightduck];
 waterboxY = [waterLine, waterLine, topduck, topduck];
+
+%% Plot Waterbox
 hold on
     patch(waterboxX,waterboxY,'b','FaceAlpha',.3)
 hold off
@@ -220,18 +215,6 @@ iswet = dely < waterLine;
 %creates new delx and dely of only the values where Y < waterline
 delxwet2 = delx(iswet);         %xmatrix of only wet values
 delywet2 = dely(iswet);         %ymatrix of only wet values
-
-refmatrix = zeros(size(iswet));
-refmatrix = refmatrix(iswet);
-
-%creates two new matricies that are the left and right points of the duck
-
-lxwet = 0; %left intersection point placeholder var
-rxwet = 0; %right intersection point placeholder var
-
-wetleft = [lxwet, waterLine]; %leftpoint of intersection
-wetright = [rxwet,waterLine]; %right point of intersection
-
 
 %% Super Sketchy IsDuck Wet Area
 %Poly area gives me a weird value thats way to high. 
