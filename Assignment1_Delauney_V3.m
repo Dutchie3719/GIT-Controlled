@@ -10,46 +10,38 @@
 %  means the duck will not float in the current configuration.
 % 
 
-%% Question 2
+%% Question 2 & Question 3
 % Can we change density or emerged height to show that 2d shape will float
-% in upright configuration
+% in upright configuration. What are the new densities and heights? 
+% Otherwise, why does it not float as intended
 % 
 %  No. In order for an item to float, the duck must have a center of mass
 %  and a center of bouyancy that are equal and equivilent vectors. As shown
-%  above, 
+%  by this model, the duck's center of mass and center of boyancy aren't
+%  aligned. The duck will always tip.
 % 
-%  For this assignment, Delauney Triangulation was used to create a shape
-%  approximation.
 % 
 
-%% Question 3
-% What are the new densities and heights? Otherwise, why does it not float
-% as intended
+%% Question 4 & Question 5
+% Which Shape moddeling technique was used? Why this shape modelling technique?
 % 
 % 
 %  For this assignment, Delauney Triangulation was used to create a shape
-%  approximation.
-% 
-
-%% Question 4 
-% Which Shape moddeling technique was used?$
-% 
-% 
-%  For this assignment, Delauney Triangulation was used to create a shape
-%  approximation.
-% 
-
-%% Question 5
-% Why this shape modelling technique?
-% 
-% 
+%  approximation. This was refined via the mesh2d library refine2.m file. 
 %  Triangulation is a more accurate way of approximating shapes than a
 %  cubic or circular shape simplification. After an initial assessment and
-%  discussion with the MATLAB TA on how the Triduck.m file worked, I was
+%  discussion on how the Triduck.m file worked, I was willing to explore
+%  how TriDuck could be used to create my own implementation. I then wrote
+%  my own version of the Delauey triangilation to create a simplified model
 %  already begining to understand the implementation of Triduck.m and how
-%  shape triangulation could be used. I was however not able to fully
-%  implement the 
-% 
+%  shape triangulation could be used. I then went back to the Triduck.m
+%  file, after a new version was provided to the class. I refined the
+%  triangles so that I could ignore the positions of intersection -- 
+%  the smaller the trianges, the smaller the additional area error. I wanted
+%  to create a self referencing version of the calculation so that I could
+%  adjust the water line as desired for later implementations. To
+%  accomplish this, I use the variable "iswet" to find any values that
+%  exist below the waterline.
 
 %% Clear Windows & Vars 
 clear
@@ -92,7 +84,7 @@ edge(m,2) = 1;
    [vert,etri, ...
     tria,tnum] = refine2(node,edge) ;
 
-    hfun = +.5 ;            % uniform "target" edge-lengths
+    hfun = +.4 ;            % uniform "target" edge-lengths
 
    [vert,etri, ...
     tria,tnum] = refine2(node,edge,[],[],hfun) ;
@@ -255,7 +247,7 @@ areaduckfixedwet = areaduckwet*areaduckscalefactor;
 
 %% Solving for Underwater COM
 iswettria = horzcat(iswet,iswet,iswet)  %created to be the right length for matrix math.
-triawet = tria(iswettria);
+triawet = tria;
 vertwet = horzcat(delxwet2,delywet2);
 
 nTriwet = size(triawet, 1); % The number of triangles

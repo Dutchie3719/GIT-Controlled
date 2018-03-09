@@ -10,33 +10,32 @@
 %  means the duck will not float in the current configuration.
 % 
 
-%% Question 2
+%% Question 2 & Question 3
 % Can we change density or emerged height to show that 2d shape will float
-% in upright configuration
+% in upright configuration. What are the new densities and heights? 
+% Otherwise, why does it not float as intended
 % 
 %  No. In order for an item to float, the duck must have a center of mass
 %  and a center of bouyancy that are equal and equivilent vectors. As shown
-%  above, 
+%  by this model, the duck's center of mass and center of boyancy aren't
+%  aligned. The duck will always tip.
 % 
-%  For this assignment, Delauney Triangulation was used to create a shape
-%  approximation.
 % 
 
 %% Question 3
-% What are the new densities and heights? Otherwise, why does it not float
-% as intended
+
 % 
 % 
 %  For this assignment, Delauney Triangulation was used to create a shape
-%  approximation.
+%  approximation. This was refined via the mesh2d library refine2.m file. 
 % 
 
 %% Question 4 
-% Which Shape moddeling technique was used?$
+% Which Shape moddeling technique was used?
 % 
 % 
 %  For this assignment, Delauney Triangulation was used to create a shape
-%  approximation.
+%  approximation. This was refined via the mesh2d library refine2.m file. 
 % 
 
 %% Question 5
@@ -45,7 +44,9 @@
 % 
 %  Triangulation is a more accurate way of approximating shapes than a
 %  cubic or circular shape simplification. After an initial assessment and
-%  discussion with the MATLAB TA on how the Triduck.m file worked, I was
+%  discussion on how the Triduck.m file worked, I was willing to explore
+%  how TriDuck could be used to create my own implementation. I then wrote
+%  my own version of the Delauey triangilation to create a simplified model
 %  already begining to understand the implementation of Triduck.m and how
 %  shape triangulation could be used. I was however not able to fully
 %  implement the 
@@ -57,7 +58,7 @@ clc
 
 %% Basic Constants
 
-dwater = 1
+dwater = 1;
 dPLA = 1.25
 dInfill = .50   %infill density
 g = 9.8         % gravity
@@ -92,7 +93,7 @@ edge(m,2) = 1;
    [vert,etri, ...
     tria,tnum] = refine2(node,edge) ;
 
-    hfun = +.5 ;            % uniform "target" edge-lengths
+    hfun = +.4 ;            % uniform "target" edge-lengths
 
    [vert,etri, ...
     tria,tnum] = refine2(node,edge,[],[],hfun) ;
@@ -240,15 +241,22 @@ rxwet = 0; %right intersection point placeholder var
 wetleft = [lxwet, waterLine]; %leftpoint of intersection
 wetright = [rxwet,waterLine]; %right point of intersection
 
+
+%% Super Sketchy IsDuck Wet Area
+%Poly area gives me a weird value thats way to high. 
+%%I'm assuming that the error is consistent and determining the factor of how high poly area is. 
+%%I'm then deviding that out to create a single useful polyarea. 
+%%This should get me the wet area of the duck via super cheaty means.
+
 areaduck2 = polyarea(delx,dely)
 areaduckwet = polyarea(delxwet2,delywet2);
 
-areaduckscalefactor = areaduck2/areaduck;
+areaduckscalefactor = areaduck2/areaduck;               
 areaduckfixedwet = areaduckwet*areaduckscalefactor;
 
 %% Solving for Underwater COM
 iswettria = horzcat(iswet,iswet,iswet)  %created to be the right length for matrix math.
-triawet = tria(iswettria);
+triawet = tria;
 vertwet = horzcat(delxwet2,delywet2);
 
 nTriwet = size(triawet, 1); % The number of triangles
