@@ -57,7 +57,7 @@ clc
 
 %% Basic Constants
 
-dwater = 1
+dwater = 1;
 dPLA = 1.25
 dInfill = .50   %infill density
 g = 9.8         % gravity
