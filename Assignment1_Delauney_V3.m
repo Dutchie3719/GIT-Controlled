@@ -138,25 +138,20 @@ hold on
 hold off
 
 %% Solving for the Duck Area Underwater
-
 delx = vert(:,1);                                                           %matrix of X coordinates
-dely = vert(:,2);  
-
+dely = vert(:,2);                                                           %matrix of Y cooridnates
 %find out which elements are below waterline and creates and index
-iswet = dely < waterLine;
-
-                                                         %matrix of Y cooridnates
-%creates new delx and dely of only the values where Y < waterline
-delxwet = delx(iswet);         %xmatrix of only wet values
-delywet = dely(iswet);         %ymatrix of only wet values
-
-%% Caculate the center and the area of the shape
+iswet = dely < waterLine;                                                      
+%% Calculate the center and the area of the shape
 nTri = size(tria, 1);                                                       % The number of triangles
 nVert = size(vert,1);                                                       % The number of vertices
 
 AreaPerTriangle = zeros(nTri,1);
 CenterPerTriangle = zeros(nTri,2);
 iswetcheck = zeros(nTri,1);
+
+AreaPerTrianglewet = zeros(nTri,1);
+CenterPerTrianglewet = zeros(nTri,2);
 
 for i=1:nTri
     i1 = tria(i,1);                                                         % The index of the first vertex in the i-th triangle
@@ -174,7 +169,7 @@ for i=1:nTri
     cen2 = [v2x v2y];
     cen3 = [v3x v3y];
 
-    if (v1y > waterLine) && (v2y > waterLine) && (v3y > waterLine)
+    if (v1y < waterLine) && (v2y < waterLine) && (v3y < waterLine)         % this if statement checks to see if any of the waterline values are above any of the vertexes of the triangle
         iswetcheck(i) = 0;
     else
         iswetcheck(i) = 1;
@@ -184,18 +179,26 @@ for i=1:nTri
     hold on
     plot(CenterPerTriangle(i,1),CenterPerTriangle(i,2),'black.')
    
-    AreaPerTriangle(i) = abs(((v1x*(v2y - v3y)) + (v2x*(v3y - v1y)) + (v3x*(v1y - v2y))) / 2);    
+    AreaPerTriangle(i) = abs(((v1x*(v2y - v3y)) + (v2x*(v3y - v1y)) + (v3x*(v1y - v2y))) / 2);
+    AreaPerTrianglewet(i) = abs(iswetcheck(i)*((v1x*(v2y - v3y)) + (v2x*(v3y - v1y)) + (v3x*(v1y - v2y))) / 2);
 end
 
 
 %% Solving for the Duck Area
 areaduck = sum(AreaPerTriangle);
 
+%% Solving for the Wet Duck Area
+areaduckwet = sum(AreaPerTrianglewet);
 
 %% Solve for the Center of the Duck
 cx = sum(AreaPerTriangle.*CenterPerTriangle(:,1))/areaduck;
 cy = sum(AreaPerTriangle.*CenterPerTriangle(:,2))/areaduck;
 ShapeCenter = [cx cy];
+
+%% Solve for the Wet Center of the Duck
+cxwet = sum(AreaPerTriangle.*CenterPerTriangle(:,1))/areaduck;
+cywet = sum(AreaPerTriangle.*CenterPerTriangle(:,2))/areaduck;
+ShapeCenterwet = [cxwet cywet];
 
 %% Solving for Mass of Duck
 % Use M = V*d
@@ -207,68 +210,21 @@ duckforce = duckmass/1000 * g;                                              %for
 duckvecstart = ShapeCenter;
 vecy = cy + duckforce;
 duckvecend = [cx, vecy];
+%% Plot Duck Center of Mass
+%Show COM in Red
+hold on;
+plot(ShapeCenter(1,1),ShapeCenter(1,2),'r*');
 
 %% Print Final Values of Total Duck
 disp([' Center: ' sprintf('%6.3f %6.3f',ShapeCenter(1,1), ShapeCenter(1,2))]);
 disp([' Area: ' sprintf('%6.3f',areaduck)]);
 disp([' Mass: ' sprintf('%6.3f',duckmass)]);
 
-
-%% Plot Duck Center of Mass
-%Show COM in Red
-hold on;
-plot(ShapeCenter(1,1),ShapeCenter(1,2),'r*');
+disp([' Wet Center: ' sprintf('%6.3f %6.3f',ShapeCenter(1,1), ShapeCenter(1,2))]);
+disp([' Wet Area: ' sprintf('%6.3f',areaduckwet)]);
+disp([' Wet Mass: ' sprintf('%6.3f',duckmass)]);
 
 
 
-%% Super Sketchy IsDuck Wet Area
-%Poly area gives me a weird value thats way to high. 
-%%I'm assuming that the error is consistent and determining the factor of how high poly area is. 
-%%I'm then deviding that out to create a single useful polyarea. 
-%%This should get me the wet area of the duck via super cheaty means.
-
-areaduck2 = polyarea(delx,dely);
-areaduckwet = polyarea(delxwet,delywet);
-
-areaduckscalefactor = areaduck2/areaduck;               
-areaduckfixedwet = areaduckwet*areaduckscalefactor;
-
-%% Solving for Underwater COM
-triawet = tria;
-vertwet = horzcat(delxwet,delywet);
-
-nTriwet = size(triawet, 1); % The number of triangles
-nVertwet = size(vertwet,1); % The number of vertices
 
 
-AreaPerTrianglewet = zeros(nTriwet,1);
-CenterPerTrianglewet = zeros(nTriwet,2);
-
-for i=1:nTri
-    i1 = tria(i,1);                                                         % The index of the first vertex in the i-th triangle
-    i2 = tria(i,2);
-    i3 = tria(i,3);
-    
-    v1x = vert(i1,1);                                                       % x-cooridinate of the first vertex
-    v1y = vert(i1,2);                                                       % y-cooridinate of the first vertex
-    v2x = vert(i2,1);
-    v2y = vert(i2,2);
-    v3x = vert(i3,1);
-    v3y = vert(i3,2);
-    
-    cen1 = [v1x v1y];
-    cen2 = [v2x v2y];
-    cen3 = [v3x v3y];
-
-    CenterPerTriangle(i,:) = [((v1x + v2x + v3x) / 3), ((v1y + v2y + v3y)/ 3)];
-    hold on
-    plot(CenterPerTriangle(i,1),CenterPerTriangle(i,2),'black.')
-   
-    AreaPerTriangle(i) = abs(((v1x*(v2y - v3y)) + (v2x*(v3y - v1y)) + (v3x*(v1y - v2y))) / 2);    
-end
-
-%create an array of the area of all triangles
-cxwet = sum(AreaPerTrianglewet.*CenterPerTrianglewet(:,1))/areaduckwet;
-cywet = sum(AreaPerTrianglewet.*CenterPerTrianglewet(:,2))/areaduckwet;
-ShapeCenteriswet = [cxwet cywet];
-  
