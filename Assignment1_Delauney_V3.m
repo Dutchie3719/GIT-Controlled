@@ -13,13 +13,12 @@
 %% Question 2 & Question 3
 % Can we change density or emerged height to show that 2d shape will float
 % in upright configuration. What are the new densities and heights? 
-% Otherwise, why does it not float as intended
+% Otherwise, why does it not float as intended?
 % 
 %  No. In order for an item to float, the duck must have a center of mass
 %  and a center of bouyancy that are equal and equivilent vectors. As shown
 %  by this model, the duck's center of mass and center of boyancy aren't
 %  aligned. The duck will always tip.
-% 
 % 
 
 %% Question 4 & Question 5
@@ -184,13 +183,15 @@ for i=1:nTri
         CenterPerTrianglewet(n,:) = [((v1x + v2x + v3x) / 3), ((v1y + v2y + v3y)/ 3)];
         plot(CenterPerTrianglewet(n,1),CenterPerTrianglewet(n,2),'g.')
         n = n+1;
+        
+        AreaPerTrianglewet(i) = abs(iswetcheck(i)*((v1x*(v2y - v3y)) + (v2x*(v3y - v1y)) + (v3x*(v1y - v2y))) / 2);
     end
     
     
     
    
     AreaPerTriangle(i) = abs(((v1x*(v2y - v3y)) + (v2x*(v3y - v1y)) + (v3x*(v1y - v2y))) / 2);
-    AreaPerTrianglewet(i) = abs(iswetcheck(i)*((v1x*(v2y - v3y)) + (v2x*(v3y - v1y)) + (v3x*(v1y - v2y))) / 2);
+    
 end
     hold off
 
@@ -206,24 +207,38 @@ cy = sum(AreaPerTriangle.*CenterPerTriangle(:,2))/areaduck;
 ShapeCenter = [cx cy];
 
 %% Solve for the Wet Center of the Duck
-cxwet = sum(AreaPerTriangle.*CenterPerTriangle(:,1))/areaduck;
-cywet = sum(AreaPerTriangle.*CenterPerTriangle(:,2))/areaduck;
-ShapeCenterwet = [cxwet cywet];
+cxwet = sum(AreaPerTrianglewet.*CenterPerTrianglewet(:,1))/areaduck;
+cywet = sum(AreaPerTrianglewet.*CenterPerTrianglewet(:,2))/(areaduck);
+ShapeCenterwet = [cx-cxwet+7 cy+cywet-2.5];
 
 %% Solving for Mass of Duck
 % Use M = V*d
 
 dduck = dPLA * dInfill; 
 duckmass = areaduck * dduck; 
+duckmasswet = areaduckwet * dduck
 duckforce = duckmass/1000 * g;                                              %force = M(kg)*g(N)
 
+
+%% Solving for the Force of Gravity (Vector)
 duckvecstart = ShapeCenter;
 vecy = cy + duckforce;
 duckvecend = [cx, vecy];
+
+%% Solving for the Force of Bouyancy (Vector)
+dwater = 1
+duckmasswet = areaduckwet * dwater
+duckforcewet = duckmasswet/1000 * g;  
+
+duckvecstart = ShapeCenterwet;
+vecywet = cy+cywet-2.5 + duckforcewet;
+duckvecend = [cx-cxwet+7, vecy];
+
 %% Plot Duck Center of Mass
 %Show COM in Red
 hold on;
 plot(ShapeCenter(1,1),ShapeCenter(1,2),'r*');
+plot(ShapeCenterwet(1,1),ShapeCenterwet(1,2),'c*');
 hold off;
 
 %% Print Final Values of Total Duck
@@ -231,9 +246,9 @@ disp([' Center: ' sprintf('%6.3f %6.3f',ShapeCenter(1,1), ShapeCenter(1,2))]);
 disp([' Area: ' sprintf('%6.3f',areaduck)]);
 disp([' Mass: ' sprintf('%6.3f',duckmass)]);
 
-disp([' Wet Center: ' sprintf('%6.3f %6.3f',ShapeCenter(1,1), ShapeCenter(1,2))]);
+disp([' Wet Center: ' sprintf('%6.3f %6.3f',ShapeCenterwet(1,1), ShapeCenterwet(1,2))]);
 disp([' Wet Area: ' sprintf('%6.3f',areaduckwet)]);
-disp([' Wet Mass: ' sprintf('%6.3f',duckmass)]);
+disp([' Wet Mass: ' sprintf('%6.3f',duckmasswet)]);
 
 
 
