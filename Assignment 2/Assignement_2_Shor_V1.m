@@ -57,10 +57,10 @@ fbrem = fb/g;
 %inputs
 m = zeros(4,1);
 forces = [fb;fbrem];
-x = centersx;
-y = centersy;
+x = centersx';
+y = centersy';
 scalars = [1,1,1,1];
 
-Aeq = vertcat(x',scalars);
+Aeq = vertcat(x,scalars);
 Beq = forces;
 
