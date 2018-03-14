@@ -3,8 +3,7 @@
 %4745094
 
 %% Question 1
-% Will the duck float in the illustrated configuration?
-% 
+% Will the duck float in the illustrated configuration? 
 % 
 %  For this assignment, Delauney Triangulation was used to create a shape
 %  approximation.
@@ -268,6 +267,8 @@ tria = [1 2; 2 3; 3 4; 4 5; 5 6; 6 7; 7 8; 8 9;9 10;10 11;11 12;12 13;13 14;14 1
 delxwet = vert(:,1);
 delywet = vert(:,2);
 
+
+
 %find out which elements are below waterline and creates and index
 iswet = dely > waterLine;
 
@@ -275,9 +276,17 @@ iswet = dely > waterLine;
 delxwet2 = delx(iswet);
 delywet2 = dely(iswet);
 
-xmeanwet = mean(delxwet);
-ymeanwet = mean(delywet);
+refmatrix = zeros(38,1);
+refmatrix = refmatrix(iswet)
 
-areaduckwet = polyarea(delxwet,delywet)
+%creates two new matricies that are the left and right points of the duck
+
+lxwet = 0; %left intersection point placeholder var
+rxwet = 0; %right intersection point placeholder var
+
+wetleft = [lxwet, -waterLine]; %leftpoint of intersection
+wetright = [rxwet,-waterLine]; %right point of intersection
+
+areaduckwet = polyarea(delxwet2,delywet2)
     
 

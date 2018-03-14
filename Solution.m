@@ -1,5 +1,4 @@
 
-
 %% Read Polyline Data
 
 fileID = fopen('duckPolyline.txt','r'); % duckPolyline.txt testPolyline.txt testPolyline_sub.txt
@@ -65,17 +64,23 @@ for i=1:nTri
     
     
     % WRITE YOUR CODE HERE %
-    % CenterPerTriangle(i,:) = ?  
-    % AreaPerTriangle(i) = ?
-        
+    CenterPerTriangle(i,:) = [((v1x + v2x + v3x) / 3), ((v1y + v2y + v3y)/ 3)];
+    hold on
+    plot(CenterPerTriangle(i,1),CenterPerTriangle(i,2),'b.')
+   
+    AreaPerTriangle(i) = abs(((v1x*(v2y - v3y)) + (v2x*(v3y - v1y)) + (v3x*(v1y - v2y))) / 2);
 end
 
 ShapeCenter = [0 0];
 totalArea = 0;
 
 % WRITE YOUR CODE HERE %
-% ShapeCenter = ?
-% totalArea = ?
+
+totalArea = sum(AreaPerTriangle);
+
+cx = sum(AreaPerTriangle.*CenterPerTriangle(:,1))/totalArea
+cy = sum(AreaPerTriangle.*CenterPerTriangle(:,2))/totalArea
+ShapeCenter = [cx cy];
 
 hold on;
 plot(ShapeCenter(1,1),ShapeCenter(1,2),'r*');
